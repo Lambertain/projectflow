@@ -10,7 +10,7 @@ ProjectFlow is a multi-tenant SaaS platform designed to help small and medium-si
 
 - **Primary Tech Stack:** Next.js, TypeScript, Prisma, PostgreSQL, Tailwind CSS
 - **Architecture:** Multi-tenant, with data isolated by `Workspace`.
-- **Live Documentation:** For the high-level strategic plan, see `documentation/00_Unified_Roadmap.md`.
+- **Live Documentation:** For the high-level strategic plan, see `../gemini_inbox/Unified_Roadmap_and_Architecture_Plan.md`.
 
 ## 🛠️ Getting Started
 
@@ -32,8 +32,6 @@ cd projectflow
 
 ```bash
 npm install
-# or
-yarn install
 ```
 
 ### 3. Set up environment variables
@@ -59,8 +57,6 @@ NEXTAUTH_URL="http://localhost:3000"
 # External Service API Keys
 OPENAI_API_KEY="your_openai_api_key"
 GOOGLE_VISION_API_KEY="your_google_vision_api_key"
-
-# Add other keys as needed (e.g., Stripe, SendGrid)
 ```
 
 ### 4. Apply database migrations
@@ -136,4 +132,3 @@ This project is optimized for deployment on platforms like Vercel or AWS Amplify
 2.  Import the project into your hosting provider.
 3.  **Crucially, set up all the environment variables from your `.env` file in the hosting provider's settings.**
 4.  The deployment should build automatically.
-
