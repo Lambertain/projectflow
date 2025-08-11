@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,27 +7,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  password      String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+// =============================================
+// 1. CORE MULTI-TENANT & AUTH MODELS
+// =============================================
 
-  // Relationships
-  accounts      Account[]
-  sessions      Session[]
-  ownedTeams    Team[]    @relation("TeamOwner")
-  memberTeams   TeamMember[]
-  bills         Bill[]    @relation("BillCreator")
-  notifications Notification[]
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  ownerId     String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner             User      @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  users             User[]    @relation("WorkspaceMembers")
+  transactions      Transaction[]
+  scheduledPayments ScheduledPayment[]
+  assets            Asset[]
+  categories        Category[]
+  projects          Project[]
+  partnerProfile    PartnerProfile?
+}
+
+model User {
+  id                   String          @id @default(cuid())
+  name                 String?
+  email                String          @unique
+  emailVerified        DateTime?
+  password             String?
+  image                String?
+  role                 UserRole        @default(MEMBER)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  workspaceId          String
+  workspace            Workspace       @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
+  ownedWorkspace       Workspace?      @relation("WorkspaceOwner")
+  accounts             Account[]
+  sessions             Session[]
+  approvedTransactions Transaction[]   @relation("ApprovedTransactions")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+  ACCOUNTANT
 }
 
 model Account {
-  id                String   @id @default(cuid())
+  id                String  @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -64,109 +89,118 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Team {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  ownerId     String
+// =============================================
+// 2. CORE BUSINESS LOGIC MODELS
+// =============================================
 
-  // Relationships
-  owner       User        @relation("TeamOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members     TeamMember[]
-  bills       Bill[]
-}
+model Transaction {
+  id             String         @id @default(cuid())
+  description    String
+  amount         Float
+  currency       String
+  date           DateTime
+  type           TransactionType @default(EXPENSE)
+  approvalStatus ApprovalStatus @default(PENDING)
+  approvedById   String?
+  approvedAt     DateTime?
 
-model TeamMember {
-  id        String   @id @default(cuid())
-  teamId    String
-  userId    String
-  role      UserRole @default(MEMBER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relationships
-  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([teamId, userId])
-}
-
-model Bill {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  amount      Float
-  currency    String    @default("USD")
-  dueDate     DateTime
-  isPaid      Boolean   @default(false)
-  paidDate    DateTime?
-  isRecurring Boolean   @default(false)
-  frequency   String?   // daily, weekly, monthly, yearly
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  creatorId   String
-  teamId      String?
+  approvedBy  User?      @relation("ApprovedTransactions", fields: [approvedById], references: [id], onDelete: SetNull)
   categoryId  String?
+  category    Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  workspaceId String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
 
-  // Relationships
-  creator     User      @relation("BillCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  team        Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+model ScheduledPayment {
+  id          String    @id @default(cuid())
+  description String
+  amount      Float
+  currency    String
+  dueDate     DateTime
+  isRecurring Boolean   @default(false)
+  frequency   String? // e.g., 'MONTHLY', 'YEARLY'
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   reminders   Reminder[]
 }
 
-model Category {
-  id        String   @id @default(cuid())
-  name      String
-  color     String   @default("#6366F1") // Default indigo color
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relationships
-  bills     Bill[]
-}
-
 model Reminder {
-  id        String   @id @default(cuid())
-  billId    String
-  remindAt  DateTime
-  sent      Boolean  @default(false)
-  sentAt    DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relationships
-  bill      Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  id                 String           @id @default(cuid())
+  daysBefore         Int
+  scheduledPaymentId String
+  scheduledPayment   ScheduledPayment @relation(fields: [scheduledPaymentId], references: [id], onDelete: Cascade)
 }
 
-model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+model Category {
+  id                String             @id @default(cuid())
+  name              String
+  color             String?            @default("#FFFFFF")
+  workspaceId       String
+  workspace         Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  transactions      Transaction[]
+  scheduledPayments ScheduledPayment[]
 
-  // Relationships
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([workspaceId, name])
 }
 
-enum UserRole {
-  OWNER
-  ADMIN
-  ACCOUNTANT
-  MEMBER
+model Project {
+  id           String        @id @default(cuid())
+  name         String
+  workspaceId  String
+  workspace    Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
 }
 
-enum NotificationType {
-  BILL_DUE
-  BILL_PAID
-  TEAM_INVITE
-  PAYMENT_REMINDER
-  SYSTEM
+model Asset {
+  id           String   @id @default(cuid())
+  name         String
+  qrCode       String?  @unique
+  purchaseDate DateTime
+  initialValue Float
+  workspaceId  String
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// =============================================
+// 3. MLM & PARTNER MODELS
+// =============================================
+
+model PartnerProfile {
+  id               String           @id @default(cuid())
+  workspaceId      String           @unique
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id])
+  referralCode     String           @unique
+  uplinePartnerId  String?
+  uplinePartner    PartnerProfile?  @relation("ReferralTree", fields: [uplinePartnerId], references: [id], onDelete: SetNull)
+  downlinePartners PartnerProfile[] @relation("ReferralTree")
+  payouts          Payout[]
+  earnings         Earning[]
+}
+
+model Earning {
+  id               String         @id @default(cuid())
+  partnerProfileId String
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id])
+}
+
+model Payout {
+  id               String         @id @default(cuid())
+  partnerProfileId String
+  partnerProfile   PartnerProfile @relation(fields: [partnerProfileId], references: [id])
 }
