@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const assetSchema = z.object({
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const assets = await prisma.asset.findMany({
     where: {
-      workspaceId: session.user.workspaceId,
+      workspaceId: session.user.workspaceId!,
     },
     orderBy: {
       purchaseDate: 'desc',
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   const newAsset = await prisma.asset.create({
     data: {
       ...validation.data,
-      workspaceId: session.user.workspaceId,
+      workspaceId: session.user.workspaceId!,
     },
   });
 

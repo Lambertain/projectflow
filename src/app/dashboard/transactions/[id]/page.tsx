@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -33,7 +33,6 @@ type Transaction = {
 export default function TransactionDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -53,11 +52,7 @@ export default function TransactionDetailPage() {
         setTransaction(data);
       } catch (error) {
         console.error('Error fetching transaction details:', error);
-        toast({
-          title: 'Ошибка',
-          description: 'Не удалось загрузить данные о транзакции.',
-          variant: 'destructive',
-        });
+        toast.error('Ошибка', { description: 'Не удалось загрузить данные о транзакции.' });
         router.push('/dashboard/transactions');
       } finally {
         setLoading(false);
@@ -65,7 +60,7 @@ export default function TransactionDetailPage() {
     };
 
     fetchTransactionDetails();
-  }, [transactionId, toast, router]);
+  }, [transactionId, router]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -76,18 +71,11 @@ export default function TransactionDetailPage() {
       if (!response.ok) {
         throw new Error('Не удалось удалить транзакцию');
       }
-      toast({
-        title: 'Успех',
-        description: 'Транзакция успешно удалена.',
-      });
+      toast.success('Успех', { description: 'Транзакция успешно удалена.' });
       router.push('/dashboard/transactions');
     } catch (error) {
       console.error('Error deleting transaction:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось удалить транзакцию.',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось удалить транзакцию.' });
     } finally {
       setIsDeleting(false);
     }

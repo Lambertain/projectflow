@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Bell, Check, Trash2, AlertCircle, Calendar, Users, CreditCard, Info } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -41,7 +41,6 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [markingAllAsRead, setMarkingAllAsRead] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
-  const { toast } = useToast();
 
   // Функция для получения уведомлений
   const fetchNotifications = async () => {
@@ -63,11 +62,7 @@ export default function NotificationsPage() {
       }, 500);
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить уведомления',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось загрузить уведомления' });
       setLoading(false);
     }
   };
@@ -172,11 +167,7 @@ export default function NotificationsPage() {
       );
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось отметить уведомление как прочитанное',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось отметить уведомление как прочитанное' });
     }
   };
 
@@ -202,17 +193,10 @@ export default function NotificationsPage() {
         prev.map(notification => ({ ...notification, read: true }))
       );
       
-      toast({
-        title: 'Готово',
-        description: 'Все уведомления отмечены как прочитанные',
-      });
+      toast.success('Готово', { description: 'Все уведомления отмечены как прочитанные' });
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось отметить все уведомления как прочитанные',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось отметить все уведомления как прочитанные' });
     } finally {
       setMarkingAllAsRead(false);
     }
@@ -229,17 +213,10 @@ export default function NotificationsPage() {
       // Обновляем состояние
       setNotifications(prev => prev.filter(notification => notification.id !== id));
       
-      toast({
-        title: 'Уведомление удалено',
-        description: 'Уведомление успешно удалено',
-      });
+      toast.success('Уведомление удалено', { description: 'Уведомление успешно удалено' });
     } catch (error) {
       console.error('Error deleting notification:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось удалить уведомление',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось удалить уведомление' });
     }
   };
 
@@ -259,17 +236,10 @@ export default function NotificationsPage() {
       // Обновляем состояние
       setNotifications([]);
       
-      toast({
-        title: 'Уведомления удалены',
-        description: 'Все уведомления успешно удалены',
-      });
+      toast.success('Уведомления удалены', { description: 'Все уведомления успешно удалены' });
     } catch (error) {
       console.error('Error deleting all notifications:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось удалить все уведомления',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось удалить все уведомления' });
     } finally {
       setDeletingAll(false);
     }

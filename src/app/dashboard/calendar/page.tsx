@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 type Bill = {
   id: string;
@@ -40,7 +40,6 @@ export default function CalendarPage() {
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const { toast } = useToast();
 
   // Функция для получения счетов
   const fetchBills = async () => {
@@ -62,11 +61,7 @@ export default function CalendarPage() {
       }, 500);
     } catch (error) {
       console.error('Error fetching bills:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить данные счетов',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось загрузить данные счетов' });
       setLoading(false);
     }
   };

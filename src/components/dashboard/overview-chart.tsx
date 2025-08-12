@@ -3,7 +3,7 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 interface OverviewChartProps {
-  data: any[];
+  data: Array<{ name: string; income: number; expense: number; }>;
 }
 
 export function OverviewChart({ data }: OverviewChartProps) {

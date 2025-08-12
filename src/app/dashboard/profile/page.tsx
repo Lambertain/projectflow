@@ -109,7 +109,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <DashboardHeader user={session?.user!} />
+      <DashboardHeader user={session?.user} />
 
       <main className="flex-1 p-6">
         <div className="container mx-auto max-w-3xl">

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 // New validation schema for a Transaction
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build filter conditions
-    const where: any = {
+    const where: Prisma.TransactionWhereInput = {
       workspaceId,
       // Add other filters from searchParams if needed
     };

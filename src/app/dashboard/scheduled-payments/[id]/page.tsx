@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -28,7 +28,6 @@ type ScheduledPayment = {
 export default function ScheduledPaymentDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { toast } = useToast();
   const [payment, setPayment] = useState<ScheduledPayment | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -45,24 +44,24 @@ export default function ScheduledPaymentDetailPage() {
         const data = await response.json();
         setPayment(data);
       } catch (error) {
-        toast({ title: 'Ошибка', description: 'Не удалось загрузить данные.', variant: 'destructive' });
+        toast.error('Ошибка', { description: 'Не удалось загрузить данные.' });
         router.push('/dashboard/scheduled-payments');
       } finally {
         setLoading(false);
       }
     };
     fetchDetails();
-  }, [paymentId, toast, router]);
+  }, [paymentId, router]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/scheduled-payments/${paymentId}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete');
-      toast({ title: 'Успех', description: 'Платеж удален.' });
+      toast.success('Успех', { description: 'Платеж удален.' });
       router.push('/dashboard/scheduled-payments');
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось удалить платеж.', variant: 'destructive' });
+      toast.error('Ошибка', { description: 'Не удалось удалить платеж.' });
       setIsDeleting(false);
     }
   };

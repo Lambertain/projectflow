@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 
 // GET - получение уведомлений пользователя
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Необходима авторизация' },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id!;
     const { searchParams } = new URL(request.url);
     
     // Параметры пагинации
@@ -94,14 +94,14 @@ export async function PATCH(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Необходима авторизация' },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id!;
     const body = await request.json();
     
     // Проверяем наличие необходимых полей
@@ -178,14 +178,14 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Необходима авторизация' },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = session.user.id!;
     const { searchParams } = new URL(request.url);
     
     // Проверяем, нужно ли удалить все уведомления

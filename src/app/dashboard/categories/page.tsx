@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -19,7 +19,6 @@ type Category = {
 };
 
 export default function CategoriesPage() {
-  const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,7 +34,7 @@ export default function CategoriesPage() {
       const data = await response.json();
       setCategories(data);
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось загрузить категории.', variant: 'destructive' });
+      toast.error('Ошибка', { description: 'Не удалось загрузить категории.' });
     } finally {
       setLoading(false);
     }
@@ -43,7 +42,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, [toast]);
+  }, []);
 
   const handleOpenDialog = (category: Category | null = null) => {
     setEditingCategory(category);
@@ -68,11 +67,11 @@ export default function CategoriesPage() {
         throw new Error(errorData.error || 'Failed to save category');
       }
 
-      toast({ title: 'Успех', description: `Категория успешно ${editingCategory ? 'обновлена' : 'создана'}.` });
+      toast.success('Успех', { description: `Категория успешно ${editingCategory ? 'обновлена' : 'создана'}.` });
       setIsDialogOpen(false);
       fetchCategories(); // Refresh list
-    } catch (error: any) {
-      toast({ title: 'Ошибка', description: error.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      toast.error('Ошибка', { description: (error as Error).message });
     }
   };
 
@@ -80,10 +79,10 @@ export default function CategoriesPage() {
     try {
       const response = await fetch(`/api/categories/${categoryId}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete category');
-      toast({ title: 'Успех', description: 'Категория удалена.' });
+      toast.success('Успех', { description: 'Категория удалена.' });
       fetchCategories(); // Refresh list
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось удалить категорию.', variant: 'destructive' });
+      toast.error('Ошибка', { description: 'Не удалось удалить категорию.' });
     }
   };
 
@@ -134,7 +133,7 @@ export default function CategoriesPage() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Удалить категорию "{category.name}"?</AlertDialogTitle>
+                            <AlertDialogTitle>Удалить категорию &quot;{category.name}&quot;?</AlertDialogTitle>
                             <AlertDialogDescription>
                               Это действие нельзя отменить. Транзакции, связанные с этой категорией, не будут удалены.
                             </AlertDialogDescription>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type Asset = {
@@ -20,7 +20,6 @@ type Asset = {
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   const fetchAssets = async () => {
     setLoading(true);
@@ -30,7 +29,7 @@ export default function AssetsPage() {
       const data = await response.json();
       setAssets(data);
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось загрузить активы', variant: 'destructive' });
+      toast.error('Ошибка', { description: 'Не удалось загрузить активы' });
     } finally {
       setLoading(false);
     }
@@ -44,10 +43,10 @@ export default function AssetsPage() {
     try {
       const response = await fetch(`/api/assets/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete asset');
-      toast({ title: 'Успех', description: 'Актив успешно удален' });
+      toast.success('Успех', { description: 'Актив успешно удален' });
       fetchAssets(); // Refresh list
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось удалить актив', variant: 'destructive' });
+      toast.error('Ошибка', { description: 'Не удалось удалить актив' });
     }
   };
 

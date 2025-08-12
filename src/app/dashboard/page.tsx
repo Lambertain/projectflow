@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { OverviewChart } from '@/components/dashboard/overview-chart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

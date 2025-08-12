@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -52,7 +52,6 @@ const deleteAccountSchema = z.object({
 export default function SettingsPage() {
   const { data: session, update } = useSession();
   const router = useRouter();
-  const { toast } = useToast();
   
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false);
   const [isNotificationsSubmitting, setIsNotificationsSubmitting] = useState(false);
@@ -130,17 +129,10 @@ export default function SettingsPage() {
         },
       });
       
-      toast({
-        title: 'Профиль обновлен',
-        description: 'Ваши данные успешно обновлены',
-      });
+      toast.success('Профиль обновлен', { description: 'Ваши данные успешно обновлены' });
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить профиль',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось обновить профиль' });
     } finally {
       setIsProfileSubmitting(false);
     }
@@ -182,17 +174,10 @@ export default function SettingsPage() {
         },
       });
       
-      toast({
-        title: 'Настройки уведомлений обновлены',
-        description: 'Ваши настройки уведомлений успешно обновлены',
-      });
+      toast.success('Настройки уведомлений обновлены', { description: 'Ваши настройки уведомлений успешно обновлены' });
     } catch (error) {
       console.error('Error updating notification settings:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить настройки уведомлений',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось обновить настройки уведомлений' });
     } finally {
       setIsNotificationsSubmitting(false);
     }
@@ -221,13 +206,10 @@ export default function SettingsPage() {
       // Сбрасываем форму
       passwordForm.reset();
       
-      toast({
-        title: 'Пароль изменен',
-        description: 'Ваш пароль успешно изменен',
-      });
-    } catch (error: any) {
+      toast.success('Пароль изменен', { description: 'Ваш пароль успешно изменен' });
+    } catch (error) {
       console.error('Error changing password:', error);
-      setPasswordError(error.message || 'Не удалось изменить пароль');
+      setPasswordError((error as Error).message || 'Не удалось изменить пароль');
     } finally {
       setIsPasswordSubmitting(false);
     }
@@ -259,9 +241,9 @@ export default function SettingsPage() {
       setTimeout(() => {
         router.push('/');
       }, 3000);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting account:', error);
-      setDeleteError(error.message || 'Не удалось удалить аккаунт');
+      setDeleteError((error as Error).message || 'Не удалось удалить аккаунт');
     } finally {
       setIsDeleteSubmitting(false);
     }

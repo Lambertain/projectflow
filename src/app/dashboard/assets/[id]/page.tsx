@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 const assetFormSchema = z.object({
   name: z.string().min(1, 'Название обязательно для заполнения'),
@@ -22,7 +22,6 @@ type AssetFormValues = z.infer<typeof assetFormSchema>;
 export default function AssetFormPage() {
   const router = useRouter();
   const params = useParams();
-  const { toast } = useToast();
   const assetId = params.id as string;
   const isEditing = assetId !== 'create';
 
@@ -47,13 +46,13 @@ export default function AssetFormPage() {
             purchaseDate: new Date(data.purchaseDate).toISOString().split('T')[0],
           });
         } catch (error) {
-          toast({ title: 'Ошибка', description: 'Не удалось загрузить данные актива', variant: 'destructive' });
+          toast.error('Ошибка', { description: 'Не удалось загрузить данные актива' });
           router.push('/dashboard/assets');
         }
       };
       fetchAsset();
     }
-  }, [isEditing, assetId, form, router, toast]);
+  }, [isEditing, assetId, form, router]);
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
@@ -71,11 +70,11 @@ export default function AssetFormPage() {
 
       if (!response.ok) throw new Error(isEditing ? 'Failed to update asset' : 'Failed to create asset');
       
-      toast({ title: 'Успех', description: `Актив успешно ${isEditing ? 'обновлен' : 'создан'}` });
+      toast.success('Успех', { description: `Актив успешно ${isEditing ? 'обновлен' : 'создан'}` });
       router.push('/dashboard/assets');
       router.refresh(); // Refresh server components
     } catch (error) {
-      toast({ title: 'Ошибка', description: `Не удалось ${isEditing ? 'обновить' : 'создать'} актив`, variant: 'destructive' });
+      toast.error('Ошибка', { description: `Не удалось ${isEditing ? 'обновить' : 'создать'} актив` });
     }
   };
 

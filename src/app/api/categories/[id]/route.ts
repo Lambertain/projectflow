@@ -1,95 +1,81 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
-// Schema for updating a category
-const categorySchema = z.object({
+const categoryUpdateSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
-  color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid color format').optional(),
+  color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Invalid color format').optional().default('#FFFFFF'),
 });
 
-// PUT - Update a category
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+async function checkCategoryAccess(categoryId: string, workspaceId: string) {
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId, workspaceId },
+  });
+  return !!category;
+}
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { workspaceId } = session.user;
-  const { id } = params;
+  const workspaceId = session.user.workspaceId!;
+
+  if (!await checkCategoryAccess(params.id, workspaceId)) {
+    return NextResponse.json({ error: 'Category not found or access denied' }, { status: 404 });
+  }
+
+  const category = await prisma.category.findUnique({ where: { id: params.id } });
+  return NextResponse.json(category);
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.workspaceId) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+  }
+
+  const workspaceId = session.user.workspaceId!;
   const body = await request.json();
 
-  const validation = categorySchema.safeParse(body);
+  const validation = categoryUpdateSchema.safeParse(body);
   if (!validation.success) {
     return NextResponse.json({ error: 'Invalid data', details: validation.error.format() }, { status: 400 });
   }
 
-  try {
-    // Check for duplicate name if name is being changed
-    if (validation.data.name) {
-      const existingCategory = await prisma.category.findFirst({
-        where: {
-          name: validation.data.name,
-          workspaceId,
-          id: { not: id }, // Exclude the current category from the check
-        },
-      });
-      if (existingCategory) {
-        return NextResponse.json({ error: 'A category with this name already exists' }, { status: 409 });
-      }
-    }
+  if (!await checkCategoryAccess(params.id, workspaceId)) {
+    return NextResponse.json({ error: 'Category not found or access denied' }, { status: 404 });
+  }
 
-    const updatedCategory = await prisma.category.updateMany({
-      where: {
-        id,
-        workspaceId,
-      },
+  try {
+    const updatedCategory = await prisma.category.update({
+      where: { id: params.id },
       data: validation.data,
     });
-
-    if (updatedCategory.count === 0) {
-      return NextResponse.json({ error: 'Category not found or you do not have access' }, { status: 404 });
-    }
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json(updatedCategory);
   } catch (error) {
     console.error('Error updating category:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// DELETE - Delete a category
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.workspaceId) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  const { workspaceId } = session.user;
-  const { id } = params;
+  const workspaceId = session.user.workspaceId!;
+
+  if (!await checkCategoryAccess(params.id, workspaceId)) {
+    return NextResponse.json({ error: 'Category not found or access denied' }, { status: 404 });
+  }
 
   try {
-    // Note: Deleting a category will set the categoryId on related transactions to null
-    // due to the `onDelete: SetNull` rule in the schema.
-    const deleteResult = await prisma.category.deleteMany({
-      where: {
-        id,
-        workspaceId,
-      },
-    });
-
-    if (deleteResult.count === 0) {
-      return NextResponse.json({ error: 'Category not found or you do not have access' }, { status: 404 });
-    }
-
+    await prisma.category.delete({ where: { id: params.id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting category:', error);

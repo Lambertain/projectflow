@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import Link from 'next/link';
@@ -29,7 +29,6 @@ type Transaction = {
 export default function TransactionsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,11 +51,7 @@ export default function TransactionsPage() {
       setTotalPages(data.pagination.pages);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось загрузить транзакции',
-        variant: 'destructive',
-      });
+      toast.error('Ошибка', { description: 'Не удалось загрузить транзакции' });
     } finally {
       setLoading(false);
     }
@@ -88,17 +83,14 @@ export default function TransactionsPage() {
         prev.map(t => t.id === transactionId ? { ...t, approvalStatus: updatedTransaction.approvalStatus } : t)
       );
 
-      toast({
-        title: 'Успех',
+      toast.success('Успех', {
         description: `Статус транзакции обновлен на "${getStatusText(approvalStatus)}"`,
       });
 
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating transaction status:', error);
-      toast({
-        title: 'Ошибка',
-        description: error.message || 'Не удалось обновить статус.',
-        variant: 'destructive',
+      toast.error('Ошибка', { 
+        description: (error as Error).message || 'Не удалось обновить статус.',
       });
     }
   };

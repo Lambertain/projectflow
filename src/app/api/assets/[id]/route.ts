@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 
 const assetUpdateSchema = z.object({
@@ -23,7 +23,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  if (!await checkAssetAccess(params.id, session.user.workspaceId)) {
+  // Убедимся, что workspaceId существует, прежде чем использовать его
+  const workspaceId = session.user.workspaceId!;
+
+  if (!await checkAssetAccess(params.id, workspaceId)) {
     return NextResponse.json({ error: 'Asset not found or access denied' }, { status: 404 });
   }
 
@@ -37,7 +40,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  if (!await checkAssetAccess(params.id, session.user.workspaceId)) {
+  // Убедимся, что workspaceId существует, прежде чем использовать его
+  const workspaceId = session.user.workspaceId!;
+
+  if (!await checkAssetAccess(params.id, workspaceId)) {
     return NextResponse.json({ error: 'Asset not found or access denied' }, { status: 404 });
   }
 
@@ -62,7 +68,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
-  if (!await checkAssetAccess(params.id, session.user.workspaceId)) {
+  // Убедимся, что workspaceId существует, прежде чем использовать его
+  const workspaceId = session.user.workspaceId!;
+
+  if (!await checkAssetAccess(params.id, workspaceId)) {
     return NextResponse.json({ error: 'Asset not found or access denied' }, { status: 404 });
   }
 
