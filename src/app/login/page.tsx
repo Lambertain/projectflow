@@ -8,6 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { signIn } from 'next-auth/react';
 
+// Force static export for GitHub Pages
+export const dynamic = 'force-static';
+
 // Validation schema
 const loginSchema = z.object({
   email: z.string().email('Некорректный email адрес'),

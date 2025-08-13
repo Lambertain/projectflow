@@ -8,6 +8,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { signIn } from 'next-auth/react';
 
+// Force static export for GitHub Pages
+export const dynamic = 'force-static';
+
 // Validation schema
 const registerSchema = z.object({
   name: z.string().min(2, 'Имя должно содержать минимум 2 символа'),

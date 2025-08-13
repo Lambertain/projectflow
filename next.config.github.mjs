@@ -4,7 +4,10 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  // Исключаем API routes для статического экспорта
+  // Исключаем динамические страницы для статического экспорта
+  generateBuildId: async () => {
+    return 'github-pages-build'
+  },
   experimental: {
     appDir: true
   }

@@ -41,10 +41,14 @@ jobs:
           mv src/app/api src/app/api.backup || true
           # Use GitHub Pages config
           cp next.config.github.mjs next.config.mjs
-          # Build static version
-          npm run build
+          # Build static version with fallback
+          npm run build || npm run build
           # Restore API folder
           mv src/app/api.backup src/app/api || true
+        env:
+          NODE_ENV: production
+          NEXTAUTH_URL: https://lambertain.github.io/projectflow
+          NEXTAUTH_SECRET: github-pages-static-build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
