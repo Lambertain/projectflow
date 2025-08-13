@@ -6,8 +6,15 @@ declare module "next-auth" {
    */
   interface Session {
     user: {
+      /** The user's postal address. */
+      id: string
       /** The user's workspace ID. */
       workspaceId: string
     } & DefaultSession["user"]
+  }
+
+  interface User {
+    id: string
+    workspaceId: string
   }
 }

@@ -26,7 +26,7 @@ const billFormSchema = z.object({
   dueDate: z.string().min(1, { message: 'Выберите дату оплаты' }),
   category: z.string().min(1, { message: 'Выберите категорию' }),
   description: z.string().optional(),
-  isRecurring: z.boolean().default(false),
+  isRecurring: z.boolean(),
   recurringPeriod: z.string().optional(),
   notifyBefore: z.string().optional(),
   teamId: z.string().optional(),

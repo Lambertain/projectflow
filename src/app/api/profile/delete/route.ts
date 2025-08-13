@@ -69,32 +69,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Проверяем, является ли пользователь единственным владельцем каких-либо команд
-    const ownedTeams = await prisma.team.findMany({
+    // Проверяем, является ли пользователь владельцем workspace
+    const workspace = await prisma.workspace.findFirst({
       where: {
-        members: {
-          some: {
-            userId,
-            role: 'OWNER',
-          },
-        },
-      },
-      include: {
-        members: {
-          where: {
-            role: 'OWNER',
-          },
-        },
+        ownerId: userId,
       },
     });
 
-    const teamsWithSingleOwner = ownedTeams.filter(team => team.members.length === 1);
-
-    if (teamsWithSingleOwner.length > 0) {
+    if (workspace) {
       return NextResponse.json(
         { 
-          error: 'Вы являетесь единственным владельцем некоторых команд. Передайте права владения или удалите команды перед удалением аккаунта.',
-          teams: teamsWithSingleOwner.map(team => ({ id: team.id, name: team.name })),
+          error: 'Вы являетесь владельцем workspace. Передайте права владения перед удалением аккаунта.',
         },
         { status: 400 }
       );
@@ -102,76 +87,16 @@ export async function POST(request: NextRequest) {
 
     // Начинаем транзакцию для удаления всех связанных данных
     await prisma.$transaction(async (tx) => {
-      // Удаляем все уведомления пользователя
-      await tx.notification.deleteMany({
+      // Удаляем все транзакции пользователя
+      await tx.transaction.deleteMany({
         where: {
-          userId,
-        },
-      });
-
-      // Удаляем все напоминания пользователя
-      await tx.reminder.deleteMany({
-        where: {
-          userId,
-        },
-      });
-
-      // Удаляем все приглашения пользователя
-      await tx.invitation.deleteMany({
-        where: {
-          email: session.user.email,
-        },
-      });
-
-      // Удаляем все категории пользователя
-      await tx.category.deleteMany({
-        where: {
-          userId,
-          isSystem: false,
-        },
-      });
-
-      // Получаем все счета пользователя
-      const userBills = await tx.bill.findMany({
-        where: {
-          userId,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      const userBillIds = userBills.map(bill => bill.id);
-
-      // Удаляем все напоминания, связанные со счетами пользователя
-      await tx.reminder.deleteMany({
-        where: {
-          billId: {
-            in: userBillIds,
+          workspace: {
+            users: {
+              some: {
+                id: userId,
+              },
+            },
           },
-        },
-      });
-
-      // Удаляем все уведомления, связанные со счетами пользователя
-      await tx.notification.deleteMany({
-        where: {
-          billId: {
-            in: userBillIds,
-          },
-        },
-      });
-
-      // Удаляем все счета пользователя
-      await tx.bill.deleteMany({
-        where: {
-          userId,
-        },
-      });
-
-      // Удаляем пользователя из всех команд
-      await tx.teamMember.deleteMany({
-        where: {
-          userId,
         },
       });
 

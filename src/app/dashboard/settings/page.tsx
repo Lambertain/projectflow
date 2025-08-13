@@ -21,7 +21,6 @@ import { useRouter } from 'next/navigation';
 const profileFormSchema = z.object({
   name: z.string().min(1, 'Имя обязательно'),
   email: z.string().email('Некорректный email'),
-  phone: z.string().optional(),
 });
 
 // Схема валидации для уведомлений
@@ -67,7 +66,6 @@ export default function SettingsPage() {
     defaultValues: {
       name: session?.user?.name || '',
       email: session?.user?.email || '',
-      phone: session?.user?.phone || '',
     },
   });
 
@@ -75,8 +73,8 @@ export default function SettingsPage() {
   const notificationsForm = useForm<z.infer<typeof notificationsFormSchema>>({
     resolver: zodResolver(notificationsFormSchema),
     defaultValues: {
-      emailNotifications: session?.user?.notificationSettings?.email || false,
-      pushNotifications: session?.user?.notificationSettings?.push || false,
+      emailNotifications: false,
+      pushNotifications: false,
     },
   });
 
@@ -125,7 +123,6 @@ export default function SettingsPage() {
           ...session?.user,
           name: data.name,
           email: data.email,
-          phone: data.phone,
         },
       });
       
@@ -300,22 +297,6 @@ export default function SettingsPage() {
                     )}
                   />
                   
-                  <FormField
-                    control={profileForm.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Телефон</FormLabel>
-                        <FormControl>
-                          <Input placeholder="+7 (999) 123-45-67" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Необязательно. Используется для уведомлений.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   
                   <Button type="submit" disabled={isProfileSubmitting}>
                     {isProfileSubmitting && (

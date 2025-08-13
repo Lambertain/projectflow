@@ -41,13 +41,46 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-      },
+    // Create user and workspace in a transaction
+    const user = await prisma.$transaction(async (tx) => {
+      // Create user first without workspace
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: 'OWNER',
+        },
+      });
+
+      // Create workspace for the user
+      const workspace = await tx.workspace.create({
+        data: {
+          name: `${name}'s Workspace`,
+          ownerId: newUser.id,
+          users: {
+            connect: { id: newUser.id },
+          },
+          categories: {
+            createMany: {
+              data: [
+                { name: 'General', color: '#6B7280' },
+                { name: 'Marketing', color: '#EF4444' },
+                { name: 'Development', color: '#3B82F6' },
+                { name: 'Operations', color: '#10B981' },
+              ],
+            },
+          },
+        },
+      });
+
+      // Update user with workspace ID
+      const updatedUser = await tx.user.update({
+        where: { id: newUser.id },
+        data: { workspaceId: workspace.id },
+      });
+
+      return updatedUser;
     });
 
     // Remove password from response

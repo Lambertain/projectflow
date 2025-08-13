@@ -216,7 +216,11 @@ export default function TransactionsPage() {
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+                    {currentPage > 1 ? (
+                      <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} />
+                    ) : (
+                      <span className="inline-flex h-10 items-center justify-center px-4 py-2 text-sm opacity-50">Previous</span>
+                    )}
                   </PaginationItem>
                   {[...Array(totalPages).keys()].map((page) => (
                     <PaginationItem key={page + 1}>
@@ -226,7 +230,11 @@ export default function TransactionsPage() {
                     </PaginationItem>
                   ))}
                   <PaginationItem>
-                    <PaginationNext onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+                    {currentPage < totalPages ? (
+                      <PaginationNext onClick={() => handlePageChange(currentPage + 1)} />
+                    ) : (
+                      <span className="inline-flex h-10 items-center justify-center px-4 py-2 text-sm opacity-50">Next</span>
+                    )}
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>

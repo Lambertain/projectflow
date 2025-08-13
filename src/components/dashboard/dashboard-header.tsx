@@ -8,7 +8,7 @@ import { User } from 'next-auth';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 
 interface DashboardHeaderProps {
-  user: User;
+  user: User | undefined;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
@@ -164,7 +164,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             >
               <span className="sr-only">Открыть меню пользователя</span>
               <div className="relative h-8 w-8 rounded-full bg-muted">
-                {user.image ? (
+                {user?.image ? (
                   <Image
                     src={user.image}
                     alt={user.name || 'Avatar'}
@@ -173,17 +173,17 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center rounded-full bg-primary-foreground text-primary">
-                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                   </div>
                 )}
               </div>
-              <span className="hidden md:inline-block">{user.name}</span>
+              <span className="hidden md:inline-block">{user?.name}</span>
             </button>
 
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 rounded-md border bg-background py-1 shadow-lg ring-1 ring-black ring-opacity-5">
                 <div className="border-b border-border px-4 py-2 text-sm text-muted-foreground">
-                  {user.email}
+                  {user?.email}
                 </div>
                 <Link
                   href="/dashboard/profile"

@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 const assetFormSchema = z.object({
   name: z.string().min(1, 'Название обязательно для заполнения'),
   purchaseDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Неверный формат даты' }),
-  initialValue: z.coerce.number().positive('Стоимость должна быть положительным числом'),
+  initialValue: z.number().positive('Стоимость должна быть положительным числом'),
 });
 
 type AssetFormValues = z.infer<typeof assetFormSchema>;

@@ -16,13 +16,6 @@ const profileFormSchema = z.object({
     .min(2, { message: 'Имя должно содержать минимум 2 символа' })
     .max(50, { message: 'Имя не должно превышать 50 символов' }),
   email: z.string().email({ message: 'Введите корректный email' }),
-  phone: z
-    .string()
-    .min(10, { message: 'Телефон должен содержать минимум 10 символов' })
-    .optional()
-    .or(z.literal('')),
-  notifyEmail: z.boolean().default(true),
-  notifyPush: z.boolean().default(true),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -44,9 +37,6 @@ export default function ProfilePage() {
     defaultValues: {
       name: '',
       email: '',
-      phone: '',
-      notifyEmail: true,
-      notifyPush: true,
     },
   });
 
@@ -56,9 +46,6 @@ export default function ProfilePage() {
       reset({
         name: session.user.name || '',
         email: session.user.email || '',
-        phone: '', // В реальном приложении здесь будет телефон из базы данных
-        notifyEmail: true, // В реальном приложении здесь будут настройки из базы данных
-        notifyPush: true, // В реальном приложении здесь будут настройки из базы данных
       });
     }
   }, [session, reset]);
@@ -206,77 +193,6 @@ export default function ProfilePage() {
                   )}
                 </div>
 
-                {/* Телефон */}
-                <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Телефон
-                  </label>
-                  <input
-                    id="phone"
-                    type="tel"
-                    {...register('phone')}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                    placeholder="+7 (XXX) XXX-XX-XX"
-                  />
-                  {errors.phone && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.phone.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Настройки уведомлений */}
-              <div className="pt-4">
-                <h3 className="mb-4 text-lg font-medium">Настройки уведомлений</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <div className="flex h-5 items-center">
-                      <input
-                        id="notifyEmail"
-                        type="checkbox"
-                        {...register('notifyEmail')}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label
-                        htmlFor="notifyEmail"
-                        className="font-medium text-gray-700"
-                      >
-                        Email-уведомления
-                      </label>
-                      <p className="text-gray-500">
-                        Получать уведомления о предстоящих платежах по email
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start">
-                    <div className="flex h-5 items-center">
-                      <input
-                        id="notifyPush"
-                        type="checkbox"
-                        {...register('notifyPush')}
-                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                      />
-                    </div>
-                    <div className="ml-3 text-sm">
-                      <label
-                        htmlFor="notifyPush"
-                        className="font-medium text-gray-700"
-                      >
-                        Push-уведомления
-                      </label>
-                      <p className="text-gray-500">
-                        Получать push-уведомления в браузере
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="flex justify-end pt-4">

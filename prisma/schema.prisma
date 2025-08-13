@@ -39,8 +39,8 @@ model User {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
-  workspaceId          String
-  workspace            Workspace       @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId          String?
+  workspace            Workspace?      @relation("WorkspaceMembers", fields: [workspaceId], references: [id], onDelete: Cascade)
   ownedWorkspace       Workspace?      @relation("WorkspaceOwner")
   accounts             Account[]
   sessions             Session[]

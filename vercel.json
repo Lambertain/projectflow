@@ -1,0 +1,12 @@
+{
+  "buildCommand": "prisma generate && prisma db push && next build",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "SENDGRID_API_KEY": "@sendgrid_api_key",
+    "EMAIL_FROM": "@email_from"
+  }
+}

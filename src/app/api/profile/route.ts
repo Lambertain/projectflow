@@ -8,11 +8,6 @@ import { z } from 'zod';
 const updateProfileSchema = z.object({
   name: z.string().min(1, 'Имя обязательно').optional(),
   email: z.string().email('Некорректный email').optional(),
-  phone: z.string().optional().nullable(),
-  notificationSettings: z.object({
-    email: z.boolean().optional(),
-    push: z.boolean().optional(),
-  }).optional(),
 });
 
 // GET - получение профиля пользователя
@@ -38,9 +33,9 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        phone: true,
         image: true,
-        notificationSettings: true,
+        workspaceId: true,
+        role: true,
       },
     });
 
@@ -52,49 +47,48 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем статистику пользователя
-    const billsCount = await prisma.bill.count({
+    const transactionsCount = await prisma.transaction.count({
       where: {
-        OR: [
-          { userId },
-          {
-            team: {
-              members: {
-                some: {
-                  userId,
-                },
-              },
+        workspace: {
+          users: {
+            some: {
+              id: userId,
             },
           },
-        ],
-      },
-    });
-
-    const teamsCount = await prisma.teamMember.count({
-      where: {
-        userId,
+        },
       },
     });
 
     const categoriesCount = await prisma.category.count({
       where: {
-        userId,
+        workspace: {
+          users: {
+            some: {
+              id: userId,
+            },
+          },
+        },
       },
     });
 
-    const unreadNotificationsCount = await prisma.notification.count({
+    const assetsCount = await prisma.asset.count({
       where: {
-        userId,
-        read: false,
+        workspace: {
+          users: {
+            some: {
+              id: userId,
+            },
+          },
+        },
       },
     });
 
     return NextResponse.json({
       ...user,
       stats: {
-        billsCount,
-        teamsCount,
+        transactionsCount,
         categoriesCount,
-        unreadNotificationsCount,
+        assetsCount,
       },
     });
   } catch (error) {
@@ -156,20 +150,14 @@ export async function PATCH(request: NextRequest) {
       data: {
         name: data.name,
         email: data.email,
-        phone: data.phone,
-        notificationSettings: data.notificationSettings
-          ? {
-              update: data.notificationSettings,
-            }
-          : undefined,
       },
       select: {
         id: true,
         name: true,
         email: true,
-        phone: true,
         image: true,
-        notificationSettings: true,
+        workspaceId: true,
+        role: true,
       },
     });
 
